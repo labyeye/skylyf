@@ -1,0 +1,668 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Image,
+  ScrollView,
+  FlatList,
+  Dimensions,
+  SafeAreaView,
+  TextInput,
+} from 'react-native';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+const { width } = Dimensions.get('window');
+
+// Sample data for the image carousel
+const carouselImages = [
+  { id: '1', uri: 'https://skylyf.com/wp-content/uploads/2025/02/SKYLYF-BUILDING-2.png' },
+  { id: '2', uri: 'https://img1.wsimg.com/isteam/ip/bc9de112-5f52-4c10-9592-67271ffb75f3/SKYLYF.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:1240,cg:true' },
+  { id: '3', uri: 'https://img1.wsimg.com/isteam/ip/bc9de112-5f52-4c10-9592-67271ffb75f3/PP.png' },
+];
+
+// Sample data for products
+const products = [
+  {
+    id: '1',
+    name: 'ZSL-450 Ultrasonic Paper Cup Making Machine',
+    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2024/12/ZSL-450-PAPER-CUP-MACHINE.png?strip=info&w=1748&ssl=1',
+    price: 'Price: $12,999',
+  },
+  {
+    id: '2',
+    name: 'ZSL-350 Fully Automatic Paper Cup Making Machine',
+    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2024/12/ZSL-350-PAPER-CUP-MAKING-MACHINE.png?strip=info&w=1748&ssl=1',
+    price: 'Price: $10,999',
+  },
+  {
+    id: '3',
+    name: 'ZSL-220 High Speed Paper Cup Making Machine',
+    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2025/01/zsl-200-paper-cup-machine.png?strip=info&w=1748&ssl=1',
+    price: 'Price: $8,999',
+  },
+  {
+    id: '4',
+    name: 'ZSL-200 High Speed Paper Cup Making Machine',
+    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2024/12/ZSL-220-PAPER-CUP-MAKING-MACHINE.jpg?strip=info&w=1748&ssl=1',
+    price: 'Price: $7,999',
+  },
+  {
+    id: '5',
+    name: 'ZSL-21 OC Medium Speed Paper Cup Making Machine',
+    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2025/01/zsl-21-paper-cup-making-machine.png?strip=info&w=1748&ssl=1',
+    price: 'Price: $5,999',
+  },
+];
+
+// Sample data for testimonials
+const testimonials = [
+  {
+    id: '1',
+    text: 'My experience with SKYLYF is outstanding. It\'s rare to find a company that genuinely invests in the success of its clients in the way that SKYLYF does. I wholeheartedly recommend SKYLYF to anyone in need of reliable paper cup machinery, quality paper cup raw materials, and essential spare parts for paper cup production. They have earned my highest recommendation',
+    name: 'MANISH AGGARWAL',
+    location: 'NEW DELHI',
+    avatar: 'https://skylyf.com/wp-content/uploads/2025/01/skylyf_client.png',
+  },
+  {
+    id: '2',
+    text: 'Working with SKYLYF has completely transformed our production capabilities. Their machines are reliable and the customer support is exceptional.',
+    name: 'RAJESH KUMAR',
+    location: 'MUMBAI',
+    avatar: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2025/01/testimonial-2.jpg?resize=100,100',
+  },
+  {
+    id: '3',
+    text: 'As a new business owner, I was concerned about investing in machinery. SKYLYF guided me through every step and provided excellent training for my team.',
+    name: 'PRIYA PATEL',
+    location: 'AHMEDABAD',
+    avatar: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2025/01/testimonial-3.jpg?resize=100,100',
+  },
+];
+
+// Sample data for blogs
+const blogPosts = [
+  {
+    id: '1',
+    title: 'How To Manufacture Paper Cup From Paper Cup Making Machine',
+    date: 'February 12, 2020',
+    featured: true,
+    categories: ['Blog', 'Featured'],
+    // Add a placeholder image for blog posts
+    image: 'https://skylyf.com/wp-content/uploads/2020/02/paper-cups-all-size-768x768.jpg',
+  },
+  {
+    id: '2',
+    title: 'HOW TO START PAPER CUP MANUFACTURING',
+    date: 'February 7, 2020',
+    featured: true,
+    categories: ['Blog', 'Featured'],
+    image: 'https://skylyf.com/wp-content/uploads/2020/02/HOW-TO-START-PAPER-CUP-MANUFACTURING-768x768.jpeg',
+  },
+  {
+    id: '3',
+    title: 'Paper Cup Making Machine',
+    date: 'February 6, 2020',
+    featured: true,
+    categories: ['Blog', 'Branding', 'Featured'],
+    image: 'https://skylyf.com/wp-content/uploads/2020/02/PAPER-CUP-WITH-LID-SKYLYF-e1739453813619-768x648.jpg',
+  },
+  {
+    id: '4',
+    title: 'Paper Cup Making Machine Project Report',
+    date: 'February 6, 2020',
+    featured: true,
+    categories: ['Blog', 'Featured'],
+    image: 'https://skylyf.com/wp-content/uploads/2020/02/PAPER-CUP-MAKING-MACHINE-PROJECT-REPORTK-768x768.jpeg',
+  },
+];
+
+const Home = ({ navigation }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('home');
+  const [cartCount, setCartCount] = useState(0); // Track cart items count
+
+  // Image carousel auto-scroll
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prevSlide) =>
+        prevSlide === carouselImages.length - 1 ? 0 : prevSlide + 1
+      );
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleSearch = (text) => {
+    setSearchTerm(text);
+  };
+
+  const handleAddToCart = () => {
+    setCartCount(cartCount + 1); // Increment cart count when a product is added
+  };
+
+  const renderImageCarouselItem = ({ item }) => (
+    <View style={styles.carouselItem}>
+      <Image source={{ uri: item.uri }} style={styles.carouselImage} />
+    </View>
+  );
+
+  const renderProductItem = ({ item }) => (
+    <View style={styles.productItem}>
+      <Image source={{ uri: item.uri }} style={styles.productImage} />
+      <Text style={styles.productName}>{item.name}</Text>
+      <Text style={styles.productPrice}>{item.price}</Text>
+      <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+        <Text style={styles.addToCartText}>Add to Cart</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Render carousel pagination indicators
+  const renderPagination = () => {
+    return (
+      <View style={styles.paginationContainer}>
+        {carouselImages.map((_, i) => (
+          <View
+            key={i}
+            style={[
+              styles.paginationDot,
+              i === activeSlide ? styles.paginationDotActive : null,
+            ]}
+          />
+        ))}
+      </View>
+    );
+  };
+  
+  // Render testimonial item
+  const renderTestimonialItem = ({ item }) => (
+    <View style={styles.testimonialItem}>
+      <View style={styles.testimonialContent}>
+        <FontAwesome name="quote-left" size={24} color="#007BFF" style={styles.quoteIcon} />
+        <Text style={styles.testimonialText}>{item.text}</Text>
+        <View style={styles.testimonialAuthor}>
+          <Image 
+            source={{ uri: item.avatar }} 
+            style={styles.testimonialAvatar}
+          />
+          <View style={styles.testimonialAuthorInfo}>
+            <Text style={styles.testimonialName}>{item.name}</Text>
+            <Text style={styles.testimonialLocation}>{item.location}</Text>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+  
+  // Render blog post item (horizontal)
+  const renderBlogItem = ({ item }) => (
+    <TouchableOpacity style={styles.blogItemHorizontal}>
+      <Image 
+        source={{ uri: item.image }}
+        style={styles.blogImageHorizontal}
+      />
+      <View style={styles.blogContentHorizontal}>
+        <View style={styles.blogCategoriesContainer}>
+          {item.categories.map((category, index) => (
+            <Text key={index} style={styles.blogCategory}>
+              {category}
+            </Text>
+          ))}
+        </View>
+        <Text style={styles.blogTitleHorizontal} numberOfLines={2}>{item.title}</Text>
+        <Text style={styles.blogDate}>posted on {item.date}</Text>
+        <View style={styles.readMoreContainer}>
+          <Text style={styles.readMoreText}>Read More</Text>
+          <FontAwesome name="arrow-right" size={14} color="#007BFF" style={styles.readMoreIcon} />
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  return (
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={styles.safeArea}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <FontAwesome name="search" size={20} color="#888" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search products..."
+              value={searchTerm}
+              onChangeText={handleSearch}
+              placeholderTextColor="#888"
+            />
+            {/* Cart Icon */}
+            <TouchableOpacity style={styles.cartIconContainer}>
+              <FontAwesome name="shopping-cart" size={24} color="#888" />
+              {cartCount > 0 && (
+                <View style={styles.cartBadge}>
+                  <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Image Carousel */}
+          <View style={styles.carouselContainer}>
+            <FlatList
+              data={carouselImages}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              renderItem={renderImageCarouselItem}
+              onMomentumScrollEnd={(event) => {
+                const slideIndex = Math.floor(
+                  event.nativeEvent.contentOffset.x / width
+                );
+                setActiveSlide(slideIndex);
+              }}
+            />
+            {renderPagination()}
+          </View>
+
+          {/* Product Carousel */}
+          <View style={styles.productSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Featured Products</Text>
+              <TouchableOpacity>
+                <Text style={styles.seeAllText}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={products}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              renderItem={renderProductItem}
+              contentContainerStyle={styles.productList}
+            />
+          </View>
+          
+          {/* Testimonials Section */}
+          <View style={styles.testimonialSection}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Client Testimonials</Text>
+              <TouchableOpacity>
+                <Text style={styles.seeAllText}>More Testimonials</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={testimonials}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              renderItem={renderTestimonialItem}
+              contentContainerStyle={styles.testimonialList}
+              snapToInterval={width - 48} // For card snapping effect
+              decelerationRate="fast"
+              snapToAlignment="center"
+            />
+          </View>
+
+          {/* Blog Section (Horizontal) */}
+          <View style={styles.blogSection}>
+            <View style={styles.blogHeader}>
+              <View style={styles.blogHeaderTitles}>
+                <Text style={styles.blogHeaderTitle}>Featured Blogs</Text>
+                <Text style={styles.blogHeaderSubtitle}>News From The Blog</Text>
+              </View>
+              <TouchableOpacity>
+                <Text style={styles.seeAllText}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={blogPosts}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              renderItem={renderBlogItem}
+              contentContainerStyle={styles.blogListHorizontal}
+              snapToInterval={width * 0.75} // For card snapping effect
+              decelerationRate="fast"
+            />
+          </View>
+
+          {/* Add additional content as needed */}
+          <View style={{ height: 80 }} /> {/* Space for bottom tabs */}
+        </ScrollView>
+
+        {/* Bottom Tab Navigation */}
+      </SafeAreaView>
+    </GestureHandlerRootView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
+  safeArea: {
+    flex: 1,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    height: 48,
+    position: 'relative',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    height: 48,
+    color: '#333',
+  },
+  cartIconContainer: {
+    position: 'absolute',
+    right: 16,
+    top: 12,
+  },
+  cartBadge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    backgroundColor: '#FF6347',
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  cartBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  carouselContainer: {
+    marginVertical: 12,
+  },
+  carouselItem: {
+    width,
+    height: 200,
+  },
+  carouselImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  paginationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ccc',
+    marginHorizontal: 4,
+  },
+  paginationDotActive: {
+    backgroundColor: '#007BFF',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  productSection: {
+    marginVertical: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: '#007BFF',
+  },
+  productList: {
+    paddingLeft: 16,
+  },
+  productItem: {
+    width: 150,
+    height: 280, // Fixed height to ensure equal size
+    marginRight: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  productImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 6,
+    marginBottom: 8,
+  },
+  productName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 14,
+    color: '#007BFF',
+    fontWeight: '500',
+  },
+  addToCartButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 8,
+    paddingVertical: 6,
+    marginTop: 'auto', // Ensures button stays at the bottom of the card
+    alignItems: 'center',
+  },
+  addToCartText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  // Testimonial Section Styles
+  testimonialSection: {
+    marginVertical: 16,
+  },
+  testimonialList: {
+    paddingLeft: 16,
+    paddingRight: 8,
+  },
+  testimonialItem: {
+    width: width - 48, // Full width with padding
+    marginRight: 16,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+    marginVertical: 8,
+  },
+  testimonialContent: {
+    padding: 20,
+  },
+  quoteIcon: {
+    marginBottom: 12,
+    opacity: 0.7,
+  },
+  testimonialText: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+    marginBottom: 16,
+    fontStyle: 'italic',
+  },
+  testimonialAuthor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    paddingTop: 16,
+  },
+  testimonialAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 12,
+  },
+  testimonialAuthorInfo: {
+    flex: 1,
+  },
+  testimonialName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  testimonialLocation: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  // Blog Section Styles (Horizontal)
+  blogSection: {
+    marginVertical: 20,
+  },
+  blogHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+  },
+  blogHeaderTitles: {
+    flex: 1,
+  },
+  blogHeaderTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  blogHeaderSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  blogDescription: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 16,
+    lineHeight: 20,
+    paddingHorizontal: 16,
+  },
+  blogListHorizontal: {
+    paddingLeft: 16,
+  },
+  blogItemHorizontal: {
+    width: width * 0.7,
+    marginRight: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  blogImageHorizontal: {
+    width: '100%',
+    height: 140,
+    resizeMode: 'cover',
+  },
+  blogContentHorizontal: {
+    padding: 12,
+  },
+  blogCategoriesContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 6,
+  },
+  blogCategory: {
+    fontSize: 12,
+    color: '#007BFF',
+    fontWeight: '500',
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  blogTitleHorizontal: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 6,
+    height: 40, // Fixed height for 2 lines
+  },
+  blogDate: {
+    fontSize: 12,
+    color: '#888',
+    marginBottom: 10,
+    fontStyle: 'italic',
+  },
+  readMoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  readMoreText: {
+    fontSize: 14,
+    color: '#007BFF',
+    fontWeight: '500',
+    marginRight: 4,
+  },
+  readMoreIcon: {
+    marginTop: 1,
+  },
+  bottomTabContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
+    height: 60,
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  tabItem: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  tabLabel: {
+    fontSize: 12,
+    marginTop: 2,
+    color: '#888',
+  },
+  activeTabLabel: {
+    color: '#007BFF',
+    fontWeight: '500',
+  },
+});
+
+export default Home;
