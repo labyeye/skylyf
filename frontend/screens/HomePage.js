@@ -18,46 +18,14 @@ import axios from 'axios';
 import { endpoints } from '../src/config/api';
 
 const { width } = Dimensions.get('window');
+const FEATURED_CARD_WIDTH = width * 0.6; // 60% of screen width
+const FEATURED_CARD_HEIGHT = FEATURED_CARD_WIDTH * 1.7; // smaller proportional height
 
 // Sample data for the image carousel
 const carouselImages = [
   { id: '1', uri: 'https://skylyf.com/wp-content/uploads/2025/02/SKYLYF-BUILDING-2.png' },
   { id: '2', uri: 'https://img1.wsimg.com/isteam/ip/bc9de112-5f52-4c10-9592-67271ffb75f3/SKYLYF.jpg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25/rs=w:1240,cg:true' },
   { id: '3', uri: 'https://img1.wsimg.com/isteam/ip/bc9de112-5f52-4c10-9592-67271ffb75f3/PP.png' },
-];
-
-// Sample data for products
-const products = [
-  {
-    id: '1',
-    name: 'ZSL-450 Ultrasonic Paper Cup Making Machine',
-    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2024/12/ZSL-450-PAPER-CUP-MACHINE.png?strip=info&w=1748&ssl=1',
-    price: 'Price: $12,999',
-  },
-  {
-    id: '2',
-    name: 'ZSL-350 Fully Automatic Paper Cup Making Machine',
-    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2024/12/ZSL-350-PAPER-CUP-MAKING-MACHINE.png?strip=info&w=1748&ssl=1',
-    price: 'Price: $10,999',
-  },
-  {
-    id: '3',
-    name: 'ZSL-220 High Speed Paper Cup Making Machine',
-    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2025/01/zsl-200-paper-cup-machine.png?strip=info&w=1748&ssl=1',
-    price: 'Price: $8,999',
-  },
-  {
-    id: '4',
-    name: 'ZSL-200 High Speed Paper Cup Making Machine',
-    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2024/12/ZSL-220-PAPER-CUP-MAKING-MACHINE.jpg?strip=info&w=1748&ssl=1',
-    price: 'Price: $7,999',
-  },
-  {
-    id: '5',
-    name: 'ZSL-21 OC Medium Speed Paper Cup Making Machine',
-    uri: 'https://i0.wp.com/skylyf.com/wp-content/uploads/2025/01/zsl-21-paper-cup-making-machine.png?strip=info&w=1748&ssl=1',
-    price: 'Price: $5,999',
-  },
 ];
 
 // Sample data for testimonials
@@ -266,7 +234,7 @@ const Home = ({ navigation }) => {
               placeholderTextColor="#888"
             />
             {/* Cart Icon */}
-            <TouchableOpacity style={styles.cartIconContainer}>
+            <TouchableOpacity style={styles.cartIconContainer} onPress={() => navigation.navigate('Cart')}>
               <FontAwesome name="shopping-cart" size={24} color="#888" />
               {cartCount > 0 && (
                 <View style={styles.cartBadge}>
@@ -309,17 +277,36 @@ const Home = ({ navigation }) => {
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => {
-                console.log('Product:', item.name, 'Images:', item.images);
+                // Placeholder rating (out of 5)
+                const rating = item.rating || 4.5;
+                // Placeholder subtitle/description
+                const subtitle = item.short_description || 'High quality, reliable performance.';
                 return (
-                  <View style={styles.card}>
+                  <View style={styles.featuredCard}>
                     <Image
-                      source={{ uri: item.images?.[0]?.src || 'https://via.placeholder.com/100' }}
-                      style={styles.image}
+                      source={{ uri: item.images?.[0]?.src || 'https://via.placeholder.com/200' }}
+                      style={styles.featuredImage}
                     />
-                    <View style={styles.info}>
-                      <Text style={styles.title}>{item.name}</Text>
-                      <Text style={styles.price}>₹{item.price}</Text>
+                    <View style={styles.featuredInfo}>
+                      <Text style={styles.featuredTitle} numberOfLines={2}>{item.name}</Text>
+                      <View style={styles.featuredRatingRow}>
+                        {[1,2,3,4,5].map((star) => (
+                          <FontAwesome
+                            key={star}
+                            name={rating >= star ? 'star' : rating >= star - 0.5 ? 'star-half-full' : 'star-o'}
+                            size={16}
+                            color="#FFD700"
+                            style={{ marginRight: 2 }}
+                          />
+                        ))}
+                        <Text style={styles.featuredRatingText}>{rating}</Text>
+                      </View>
+                      <View style={styles.featuredPriceTag}><Text style={styles.featuredPrice}>₹{item.price}</Text></View>
                     </View>
+                    <TouchableOpacity style={styles.featuredAddToCartButton} onPress={handleAddToCart}>
+                      <Text style={styles.featuredAddToCartText}>Add to Cart</Text>
+                    </TouchableOpacity>
+                    
                   </View>
                 );
               }}
@@ -714,11 +701,112 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     elevation: 2,
+    
   },
   image: { width: 70, height: 70, borderRadius: 8, marginRight: 16, backgroundColor: '#eee' },
   info: { flex: 1 },
   title: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
   price: { color: '#007AFF', fontWeight: 'bold' },
+  featuredCard: {
+    width: FEATURED_CARD_WIDTH,
+    height: FEATURED_CARD_HEIGHT,
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    marginRight: 18,
+    padding: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
+    justifyContent: 'flex-start',
+  },
+  featuredImage: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 12,
+    marginBottom: 14,
+    backgroundColor: '#f0f0f0',
+    resizeMode: 'contain',
+  },
+  featuredInfo: {
+    alignItems: 'center',
+    marginBottom: 12,
+    flex: 1,
+    width: '100%',
+  },
+  featuredTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#222',
+    textAlign: 'center',
+    marginBottom: 8,
+    minHeight: 40,
+  },
+  featuredSubtitle: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 6,
+    minHeight: 18,
+  },
+  featuredRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  featuredRatingText: {
+    fontSize: 13,
+    color: '#888',
+    marginLeft: 4,
+    fontWeight: '500',
+  },
+  featuredPriceTag: {
+    backgroundColor: '#e6f0ff',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    alignSelf: 'center',
+    marginBottom: 4,
+  },
+  featuredPrice: {
+    color: '#007AFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  featuredAddToCartButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 8,
+  },
+  featuredAddToCartText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
+  goToCartButton: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#007BFF',
+  },
+  goToCartButtonText: {
+    color: '#007BFF',
+    fontSize: 15,
+    fontWeight: 'bold',
+    letterSpacing: 0.5,
+  },
 });
 
 export default Home;

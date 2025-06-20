@@ -13,143 +13,50 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import axios from 'axios';
+import { endpoints } from '../src/config/api';
 
 const { width } = Dimensions.get('window');
-
-const rawMaterialProducts = [
-  {
-    id: '1',
-    name: 'Contactor NXC 12 | 12 Amp | 220 VAC | 3 NO | Chint',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/contactor-12-amp.jpg',
-    price: 1000,
-    discount: 10,
-    rating: 4.5,
-  },
-  {
-    id: '2',
-    name: 'Contactor NXC 18 | 18 Amp | 220 VAC | 3 NO | Chint',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/contactor-18-amp-nxc-18-in-paper-cup-making-machine.jpg',
-    price: 950,
-    discount: 10,
-    rating: 4.0,
-  },
-  {
-    id: '3',
-    name: 'Contactor NXC 25 | 25 Amp | 220 VAC | 3 NO | Chint',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/contactor-nxc-25-in-paper-cup-making-machine.jpg',
-    price: 900,
-    discount: 5,
-    rating: 4.7,
-  },
-  {
-    id: '4',
-    name: 'Contactor NXC 09 | 9 Amp | 220 VAC | 3 NO | Chint',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/10/9-AMP-CONTACTOR.jpg',
-    price: 950,
-    discount: 10,
-    rating: 3.5,
-  },
-  {
-    id: '5',
-    name: 'Fully Automatic Paper Cup Making Machine',
-    uri: 'https://skylyf.com/wp-content/uploads/2024/12/ZSL-350-PAPER-CUP-MAKING-MACHINE-768x545.png',
-    price: 1050000,
-    discount: 0,
-    rating: 4.2,
-  },
-  {
-    id: '6',
-    name: 'High Speed Paper Disposable Cup Machine',
-    uri: 'https://skylyf.com/wp-content/uploads/2024/12/ZSL-220-PAPER-CUP-MAKING-MACHINE-768x545.jpg',
-    price: 890000,
-    discount: 0,
-    rating: 4.6,
-  },
-  {
-    id: '7',
-    name: 'L Type Rubber | Top Outer Dia 18 mm | Big Nozzle Dia 10 mm | Small Nozzle Dia 4 mm | Imported',
-    uri: 'https://skylyf.com/wp-content/uploads/2025/02/L-Type-Rubber.png',
-    price: 50,
-    discount: 0,
-    rating: 4.3,
-  },
-  {
-    id: '8',
-    name: 'Paper Cup Raw Material Sample Kit',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/PAPER-CUPS-RAW-MATERIAL-SAMPLE-KIT-768x768.jpg',
-    price: 15,
-    discount: 33,
-    rating: 4.8,
-  },
-  {
-    id: '9',
-    name: 'Pneumatic Air Cylinder SC 63X125 | Bore Dia 63 mm | Stroke 125 mm | Techno',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/Pneumatic-Cylinders-63125-768x566.jpg',
-    price: 1600,
-    discount: 15,
-    rating: 4.2,
-  },
-  {
-    id: '10',
-    name: 'Pneumatic Air Cylinder SC 80X125 | Bore Dia 80 mm | Stroke 125 mm | Techno',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/Pneumatic-Cylinders-63125-768x566.jpg',
-    price: 2350,
-    discount: 30,
-    rating: 4.4,
-  },
-  {
-    id: '11',
-    name: 'Silicone Vacuum Suction Cup | Double Layer Small | Paper Cup Vacuum Sucker',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/double-layer-paper-cup-vacuum-rubber.png',
-    price: 50,
-    discount: 0,
-    rating: 4.0,
-  },
-  {
-    id: '12',
-    name: 'Silicone Vacuum Suction Cup | Double Layer | Paper Cup Big Sucker',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/double_layer_big_suction_cup.png',
-    price: 6,
-    discount: 0,
-    rating: 4.6,
-  },
-  {
-    id: '13',
-    name: 'Silicone Vacuum Suction Cup | Double Layer | Paper Cup Rubber',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/paper-cup-rubber.png',
-    price: 30,
-    discount: 0,
-    rating: 4.3,
-  },
-  {
-    id: '14',
-    name: 'Silicone Vacuum Suction Cup | Double Layer | Paper Cup Rubber',
-    uri: 'https://skylyf.com/wp-content/uploads/2019/06/silicone_vacuum_suction_cup.png',
-    price: 50,
-    discount: 0,
-    rating: 4.1,
-  },
-];
 
 const RawMaterialScreen = () => {
   const [cartCount, setCartCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState(rawMaterialProducts);
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [sortOption, setSortOption] = useState('priceLowToHigh');
   const [filterPriceRange, setFilterPriceRange] = useState([0, 5000000]);
   const [filterDiscount, setFilterDiscount] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(endpoints.products);
+        setProducts(res.data);
+        setFilteredProducts(res.data);
+      } catch (error) {
+        setProducts([]);
+        setFilteredProducts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
     if (searchTerm) {
-      const searchResults = rawMaterialProducts.filter(product => 
+      const searchResults = products.filter(product => 
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredProducts(searchResults);
     } else {
       applyFilters();
     }
-  }, [searchTerm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, products]);
 
   const handleAddToCart = () => {
     setCartCount(cartCount + 1);
@@ -171,15 +78,14 @@ const RawMaterialScreen = () => {
   };
 
   const applyFilters = () => {
-    const filtered = rawMaterialProducts.filter((product) => {
+    const filtered = products.filter((product) => {
       const matchesSearch = searchTerm ? 
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) : true;
-        
       return (
         matchesSearch &&
-        product.price >= filterPriceRange[0] &&
-        product.price <= filterPriceRange[1] &&
-        product.discount >= filterDiscount
+        Number(product.price) >= filterPriceRange[0] &&
+        Number(product.price) <= filterPriceRange[1] &&
+        (product.discount || 0) >= filterDiscount
       );
     });
     sortProducts(sortOption, filtered);
@@ -188,11 +94,11 @@ const RawMaterialScreen = () => {
   const sortProducts = (option, data = filteredProducts) => {
     let sortedData = [...data];
     if (option === 'priceLowToHigh') {
-      sortedData.sort((a, b) => a.price - b.price);
+      sortedData.sort((a, b) => Number(a.price) - Number(b.price));
     } else if (option === 'priceHighToLow') {
-      sortedData.sort((a, b) => b.price - a.price);
+      sortedData.sort((a, b) => Number(b.price) - Number(a.price));
     } else if (option === 'rating') {
-      sortedData.sort((a, b) => b.rating - a.rating);
+      sortedData.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
     setFilteredProducts(sortedData);
   };
@@ -217,7 +123,7 @@ const RawMaterialScreen = () => {
       
     return (
       <View style={styles.productItem}>
-        <Image source={{ uri: item.uri }} style={styles.productImage} />
+        <Image source={{ uri: item.images?.[0]?.src || 'https://via.placeholder.com/200' }} style={styles.productImage} />
         
         <View style={styles.productDetails}>
           <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
@@ -236,7 +142,7 @@ const RawMaterialScreen = () => {
           
           <View style={styles.ratingContainer}>
             <FontAwesome name="star" size={16} color="#FFD700" />
-            <Text style={styles.ratingText}>{item.rating.toFixed(1)}</Text>
+            <Text style={styles.ratingText}>{item.rating ? item.rating.toFixed(1) : 'N/A'}</Text>
           </View>
           
           <TouchableOpacity 
@@ -276,6 +182,22 @@ const RawMaterialScreen = () => {
     { label: 'Discount 10%+', value: 10 },
     { label: 'Discount 20%+', value: 20 }
   ];
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading products...</Text>
+      </View>
+    );
+  }
+
+  if (!filteredProducts.length) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>No products found.</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -355,24 +277,14 @@ const RawMaterialScreen = () => {
         </View>
       </View>
       
-      {filteredProducts.length === 0 ? (
-        <View style={styles.emptyResultsContainer}>
-          <FontAwesome name="search" size={50} color="#ccc" />
-          <Text style={styles.emptyResultsText}>No products found</Text>
-          <Text style={styles.emptyResultsSubtext}>
-            Try adjusting your search or filters
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredProducts}
-          keyExtractor={(item) => item.id}
-          renderItem={renderProductItem}
-          contentContainerStyle={styles.productList}
-          showsVerticalScrollIndicator={false}
-          numColumns={1}
-        />
-      )}
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item) => item.id}
+        renderItem={renderProductItem}
+        contentContainerStyle={styles.productList}
+        showsVerticalScrollIndicator={false}
+        numColumns={1}
+      />
 
       {/* Filter Modal */}
       <Modal
@@ -729,24 +641,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
-  },
-  emptyResultsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 40,
-  },
-  emptyResultsText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 16,
-  },
-  emptyResultsSubtext: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 8,
   },
 });
 

@@ -9,6 +9,7 @@ import About from '../../screens/About';
 import RawMaterialScreen from '../../screens/RawMaterial';
 import ServiceRequest from '../../screens/ServiceRequest';
 import Profile from '../../screens/Profile';
+import Cart from '../../screens/Cart';
 
 const Tab = createBottomTabNavigator();
 
@@ -27,6 +28,8 @@ const TabNavigator = () => (
           return <FontAwesome name="user" size={size} color={color} />;
         } else if (route.name === 'Service') {
           return <AntDesign name="customerservice" size={size} color={color} />;
+        } else if (route.name === 'Cart') {
+          return <FontAwesome name="shopping-cart" size={size} color={color} />;
         }
       },
       headerShown: false,
@@ -37,6 +40,7 @@ const TabNavigator = () => (
     <Tab.Screen name="Raw Materials" component={RawMaterialScreen} />
     <Tab.Screen name="Service" component={ServiceRequest} />
     <Tab.Screen name="Profile" component={Profile} />
+    <Tab.Screen name="Cart" component={Cart} options={{ tabBarButton: () => null, tabBarVisible: false }} />
   </Tab.Navigator>
 );
 

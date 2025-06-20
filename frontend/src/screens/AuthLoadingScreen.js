@@ -5,8 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const AuthLoadingScreen = ({ navigation }) => {
   useEffect(() => {
     const checkAuth = async () => {
-      const token = await AsyncStorage.getItem('userToken');
-      if (token) {
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
         navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
       } else {
         navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
