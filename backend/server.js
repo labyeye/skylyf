@@ -5,6 +5,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
+const WooCommerceRestApi = require("@woocommerce/woocommerce-rest-api").default;
 
 // Load environment variables
 dotenv.config();
@@ -15,6 +16,15 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Initialize WooCommerce API
+const WooCommerce = new WooCommerceRestApi({
+  url: process.env.WOO_STORE_URL,
+  consumerKey: process.env.WOO_CONSUMER_KEY,
+  consumerSecret: process.env.WOO_CONSUMER_SECRET,
+  wpAPI: true,
+  version: 'wc/v3'
+});
 
 // Mock database for users (in a real app, you'd use a real database)
 const users = [
@@ -31,70 +41,77 @@ const users = [
     name: 'Regular User'
   }
 ];
-app.post('/api/auth/login', (req, res) => {
+
+// WooCommerce Customer Registration
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    // Generate a random temporary password
+    const tempPassword = Math.random().toString(36).slice(-8);
+    
+    // Create customer in WooCommerce
+    const customerData = {
+      email: email,
+      password: tempPassword,
+      username: email.split('@')[0], // Use part of email as username
+    };
+
+    const response = await WooCommerce.post('customers', customerData);
+    
+    // Send email with temporary password (you'll need to implement this)
+    // For now, we'll just return the temp password in the response
+    res.json({
+      message: 'Registration successful',
+      tempPassword: tempPassword // In production, remove this and implement email sending
+    });
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      message: 'Failed to register user',
+      error: error.message
+    });
+  }
+});
+
+// WooCommerce Customer Login
+app.post('/api/auth/login', async (req, res) => {
+  try {
     const { email, password } = req.body;
     
-    console.log("Login attempt:", email);
-    
-    // Find user by email
-    const user = users.find(u => u.email === email);
-    
-    if (!user) {
-      console.log("User not found");
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
-    
-    // For testing, accept 'admin123' directly without bcrypt
-    if (password === 'admin123') {
-      console.log("Login successful with direct password");
-      
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name },
-        process.env.JWT_SECRET || 'skylyf_secret_key_2023',
-        { expiresIn: '1h' }
-      );
-      
-      return res.json({
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name
-        }
-      });
-    }
-    
-    // Or continue with bcrypt compare
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (err) {
-        console.log("Bcrypt error:", err);
-        return res.status(500).json({ message: 'Server error' });
-      }
-      
-      if (!result) {
-        console.log("Password mismatch");
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-      
-      console.log("Login successful with bcrypt");
-      
-      // Generate JWT token
-      const token = jwt.sign(
-        { id: user.id, email: user.email, name: user.name },
-        process.env.JWT_SECRET || 'skylyf_secret_key_2023',
-        { expiresIn: '1h' }
-      );
-      
-      res.json({
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name
-        }
-      });
+    // Get customer by email
+    const response = await WooCommerce.get('customers', {
+      email: email
     });
-  });
+
+    const customers = response.data;
+    
+    if (customers.length === 0) {
+      return res.status(401).json({
+        message: 'Invalid email or password'
+      });
+    }
+
+    const customer = customers[0];
+    
+    // In a real implementation, you would verify the password
+    // For now, we'll just return a success response
+    res.json({
+      message: 'Login successful',
+      customer: {
+        id: customer.id,
+        email: customer.email,
+        name: customer.first_name + ' ' + customer.last_name
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      message: 'Failed to login',
+      error: error.message
+    });
+  }
+});
 
 // Verify token middleware
 const verifyToken = (req, res, next) => {
@@ -140,7 +157,35 @@ app.get('/api/user/profile', verifyToken, (req, res) => {
   });
 });
 
-const PORT = process.env.PORT;
+// API Routes
+app.get('/api/products', async (req, res) => {
+  try {
+    const response = await WooCommerce.get('products');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/categories', async (req, res) => {
+  try {
+    const response = await WooCommerce.get('products/categories');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/orders', async (req, res) => {
+  try {
+    const response = await WooCommerce.get('orders');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
