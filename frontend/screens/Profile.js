@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Text,
   StyleSheet,
@@ -10,13 +10,43 @@ import {
   StatusBar,
   Platform,
   Alert,
+  TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { endpoints } from '../src/config/api';
 
-const Profile = ({navigation}) => {
-  const [userName, setUserName] = useState('Kristin Mark');
-  const [userEmail, setUserEmail] = useState('kristinmark@gmail.com');
-  const [premium, setPremium] = useState(true);
+const Profile = ({ navigation }) => {
+  const [userName, setUserName] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [premium, setPremium] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [customerId, setCustomerId] = useState(null);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      setLoading(true);
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        if (userData) {
+          const user = JSON.parse(userData);
+          setUserName(user.name || '');
+          setUserEmail(user.email || '');
+          setPremium(user.premium || false);
+          setCustomerId(user.id);
+        }
+      } catch (e) {
+        console.log('Failed to load user data', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, []);
 
   const handleSignOut = () => {
     Alert.alert(
@@ -24,9 +54,41 @@ const Profile = ({navigation}) => {
       'Are you sure you want to sign out?',
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', onPress: () => console.log('User signed out') }
+        { text: 'Sign Out', onPress: async () => {
+            await AsyncStorage.removeItem('userData');
+            navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+          }
+        }
       ]
     );
+  };
+
+  const handleEdit = () => setIsEditing(true);
+  const handleCancel = () => setIsEditing(false);
+
+  const handleSave = async () => {
+    if (!userName || !userEmail) {
+      Alert.alert('Error', 'Name and email cannot be empty');
+      return;
+    }
+    setSaving(true);
+    try {
+      // Update WooCommerce customer
+      await axios.put(`${endpoints.register.replace('/auth/register','')}/customers/${customerId}`, {
+        first_name: userName.split(' ')[0],
+        last_name: userName.split(' ').slice(1).join(' '),
+        email: userEmail,
+      });
+      // Update AsyncStorage
+      const updatedUser = { id: customerId, name: userName, email: userEmail, premium };
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
+      setIsEditing(false);
+      Alert.alert('Success', 'Profile updated successfully');
+    } catch (error) {
+      Alert.alert('Error', error.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const profileOptions = [
@@ -37,6 +99,14 @@ const Profile = ({navigation}) => {
     { icon: 'sign-out', text: 'Sign Out', action: handleSignOut, danger: true }
   ];
 
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
@@ -44,9 +114,20 @@ const Profile = ({navigation}) => {
       {/* Header with edit option */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity onPress={() => console.log('Edit profile')}>
-          <FontAwesome name="pencil" size={20} color="#0066cc" />
-        </TouchableOpacity>
+        {isEditing ? (
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity onPress={handleSave} disabled={saving} style={{ marginRight: 10 }}>
+              <FontAwesome name="check" size={20} color="#28a745" />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleCancel} disabled={saving}>
+              <FontAwesome name="times" size={20} color="#e74c3c" />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity onPress={handleEdit}>
+            <FontAwesome name="pencil" size={20} color="#0066cc" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* Profile Header */}
@@ -63,9 +144,29 @@ const Profile = ({navigation}) => {
           )}
         </View>
         <View style={styles.userInfo}>
-          <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.userEmail}>{userEmail}</Text>
-          
+          {isEditing ? (
+            <>
+              <TextInput
+                style={styles.input}
+                value={userName}
+                onChangeText={setUserName}
+                placeholder="Full Name"
+              />
+              <TextInput
+                style={styles.input}
+                value={userEmail}
+                onChangeText={setUserEmail}
+                placeholder="Email"
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </>
+          ) : (
+            <>
+              <Text style={styles.userName}>{userName}</Text>
+              <Text style={styles.userEmail}>{userEmail}</Text>
+            </>
+          )}
         </View>
       </View>
 
@@ -316,6 +417,15 @@ const styles = StyleSheet.create({
   appVersion: {
     color: '#999',
     fontSize: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    fontSize: 16,
+    backgroundColor: '#fff',
   },
 });
 
