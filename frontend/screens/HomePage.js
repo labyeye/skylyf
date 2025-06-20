@@ -10,9 +10,12 @@ import {
   Dimensions,
   SafeAreaView,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import axios from 'axios';
+import { endpoints } from '../src/config/api';
 
 const { width } = Dimensions.get('window');
 
@@ -123,9 +126,25 @@ const Home = ({ navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('home');
   const [cartCount, setCartCount] = useState(0); // Track cart items count
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Image carousel auto-scroll
   const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get(endpoints.products);
+        setProducts(res.data);
+      } catch (error) {
+        console.log('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -224,6 +243,14 @@ const Home = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -281,7 +308,21 @@ const Home = ({ navigation }) => {
               horizontal
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id}
-              renderItem={renderProductItem}
+              renderItem={({ item }) => {
+                console.log('Product:', item.name, 'Images:', item.images);
+                return (
+                  <View style={styles.card}>
+                    <Image
+                      source={{ uri: item.images?.[0]?.src || 'https://via.placeholder.com/100' }}
+                      style={styles.image}
+                    />
+                    <View style={styles.info}>
+                      <Text style={styles.title}>{item.name}</Text>
+                      <Text style={styles.price}>₹{item.price}</Text>
+                    </View>
+                  </View>
+                );
+              }}
               contentContainerStyle={styles.productList}
             />
           </View>
@@ -663,6 +704,21 @@ const styles = StyleSheet.create({
     color: '#007BFF',
     fontWeight: '500',
   },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  list: { padding: 16 },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 16,
+    padding: 12,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  image: { width: 70, height: 70, borderRadius: 8, marginRight: 16, backgroundColor: '#eee' },
+  info: { flex: 1 },
+  title: { fontSize: 16, fontWeight: 'bold', marginBottom: 4 },
+  price: { color: '#007AFF', fontWeight: 'bold' },
 });
 
 export default Home;

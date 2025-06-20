@@ -22,9 +22,7 @@ const Profile = ({ navigation }) => {
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [premium, setPremium] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [customerId, setCustomerId] = useState(null);
 
   useEffect(() => {
@@ -63,33 +61,7 @@ const Profile = ({ navigation }) => {
     );
   };
 
-  const handleEdit = () => setIsEditing(true);
-  const handleCancel = () => setIsEditing(false);
-
-  const handleSave = async () => {
-    if (!userName || !userEmail) {
-      Alert.alert('Error', 'Name and email cannot be empty');
-      return;
-    }
-    setSaving(true);
-    try {
-      // Update WooCommerce customer
-      await axios.put(`${endpoints.register.replace('/auth/register','')}/customers/${customerId}`, {
-        first_name: userName.split(' ')[0],
-        last_name: userName.split(' ').slice(1).join(' '),
-        email: userEmail,
-      });
-      // Update AsyncStorage
-      const updatedUser = { id: customerId, name: userName, email: userEmail, premium };
-      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
-      setIsEditing(false);
-      Alert.alert('Success', 'Profile updated successfully');
-    } catch (error) {
-      Alert.alert('Error', error.response?.data?.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
-  };
+  const handleEdit = () => navigation.navigate('EditProfile');
 
   const profileOptions = [
     { icon: 'history', text: 'Order History', action: () => console.log('Order History') },
@@ -114,20 +86,9 @@ const Profile = ({ navigation }) => {
       {/* Header with edit option */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Profile</Text>
-        {isEditing ? (
-          <View style={{ flexDirection: 'row' }}>
-            <TouchableOpacity onPress={handleSave} disabled={saving} style={{ marginRight: 10 }}>
-              <FontAwesome name="check" size={20} color="#28a745" />
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleCancel} disabled={saving}>
-              <FontAwesome name="times" size={20} color="#e74c3c" />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity onPress={handleEdit}>
-            <FontAwesome name="pencil" size={20} color="#0066cc" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={handleEdit}>
+          <FontAwesome name="pencil" size={20} color="#0066cc" />
+        </TouchableOpacity>
       </View>
 
       {/* Profile Header */}
@@ -144,29 +105,8 @@ const Profile = ({ navigation }) => {
           )}
         </View>
         <View style={styles.userInfo}>
-          {isEditing ? (
-            <>
-              <TextInput
-                style={styles.input}
-                value={userName}
-                onChangeText={setUserName}
-                placeholder="Full Name"
-              />
-              <TextInput
-                style={styles.input}
-                value={userEmail}
-                onChangeText={setUserEmail}
-                placeholder="Email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </>
-          ) : (
-            <>
-              <Text style={styles.userName}>{userName}</Text>
-              <Text style={styles.userEmail}>{userEmail}</Text>
-            </>
-          )}
+          <Text style={styles.userName}>{userName}</Text>
+          <Text style={styles.userEmail}>{userEmail}</Text>
         </View>
       </View>
 

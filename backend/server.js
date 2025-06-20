@@ -113,18 +113,12 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Verify token middleware
+// JWT middleware
 const verifyToken = (req, res, next) => {
   const bearerHeader = req.headers['authorization'];
-  
-  if (!bearerHeader) {
-    return res.status(403).json({ message: 'Access denied. No token provided.' });
-  }
-  
+  if (!bearerHeader) return res.status(403).json({ message: 'No token provided.' });
   try {
-    const bearer = bearerHeader.split(' ');
-    const token = bearer[1];
-    
+    const token = bearerHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'skylyf_secret_key_2023');
     req.user = decoded;
     next();
@@ -179,6 +173,32 @@ app.get('/api/categories', async (req, res) => {
 app.get('/api/orders', async (req, res) => {
   try {
     const response = await WooCommerce.get('orders');
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get WooCommerce customer by ID (protected)
+app.get('/api/customers/:id', verifyToken, async (req, res) => {
+  if (parseInt(req.params.id) !== req.user.id) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  try {
+    const response = await WooCommerce.get(`customers/${req.params.id}`);
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update WooCommerce customer by ID (protected)
+app.put('/api/customers/:id', verifyToken, async (req, res) => {
+  if (parseInt(req.params.id) !== req.user.id) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+  try {
+    const response = await WooCommerce.put(`customers/${req.params.id}`, req.body);
     res.json(response.data);
   } catch (error) {
     res.status(500).json({ error: error.message });
