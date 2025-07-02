@@ -15,10 +15,11 @@ import { Picker } from '@react-native-picker/picker';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 import { endpoints } from '../src/config/api';
+import { useCart } from '../src/CartContext';
 
 const { width } = Dimensions.get('window');
 
-const RawMaterialScreen = () => {
+const RawMaterialScreen = ({ navigation }) => {
   const [cartCount, setCartCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
@@ -29,6 +30,8 @@ const RawMaterialScreen = () => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [loading, setLoading] = useState(true);
   
+  const { cartProducts, addToCart } = useCart();
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -58,8 +61,8 @@ const RawMaterialScreen = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, products]);
 
-  const handleAddToCart = () => {
-    setCartCount(cartCount + 1);
+  const handleAddToCart = (product) => {
+    addToCart(product);
   };
 
   const handleSortChange = (value) => {
@@ -147,7 +150,7 @@ const RawMaterialScreen = () => {
           
           <TouchableOpacity 
             style={styles.addToCartButton} 
-            onPress={handleAddToCart}
+            onPress={() => handleAddToCart(item)}
           >
             <Text style={styles.addToCartText}>+ Add to Cart</Text>
           </TouchableOpacity>
@@ -213,11 +216,11 @@ const RawMaterialScreen = () => {
           />
         </View>
         
-        <TouchableOpacity style={styles.cartIconContainer}>
+        <TouchableOpacity style={styles.cartIconContainer} onPress={() => navigation.navigate('Cart')}>
           <FontAwesome name="shopping-cart" size={24} color="#333" />
-          {cartCount > 0 && (
+          {cartProducts.length > 0 && (
             <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{cartCount}</Text>
+              <Text style={styles.cartBadgeText}>{cartProducts.length}</Text>
             </View>
           )}
         </TouchableOpacity>

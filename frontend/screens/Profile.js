@@ -17,6 +17,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { endpoints } from '../src/config/api';
+import { useCart } from '../src/CartContext';
 
 const Profile = ({ navigation }) => {
   const [userName, setUserName] = useState('');
@@ -24,6 +25,7 @@ const Profile = ({ navigation }) => {
   const [premium, setPremium] = useState(false);
   const [loading, setLoading] = useState(true);
   const [customerId, setCustomerId] = useState(null);
+  const { clearCart } = useCart();
 
   useEffect(() => {
     const loadUser = async () => {
@@ -54,6 +56,7 @@ const Profile = ({ navigation }) => {
         { text: 'Cancel', style: 'cancel' },
         { text: 'Sign Out', onPress: async () => {
             await AsyncStorage.removeItem('userData');
+            await clearCart();
             navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
           }
         }

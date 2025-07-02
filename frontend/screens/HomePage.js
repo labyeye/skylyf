@@ -16,6 +16,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
 import { endpoints } from '../src/config/api';
+import { useCart } from '../src/CartContext';
 
 const { width } = Dimensions.get('window');
 const FEATURED_CARD_WIDTH = width * 0.6; // 60% of screen width
@@ -93,12 +94,13 @@ const blogPosts = [
 const Home = ({ navigation }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('home');
-  const [cartCount, setCartCount] = useState(0); // Track cart items count
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState([]);
 
   // Image carousel auto-scroll
   const [activeSlide, setActiveSlide] = useState(0);
+
+  const { cartProducts, addToCart } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -128,8 +130,8 @@ const Home = ({ navigation }) => {
     setSearchTerm(text);
   };
 
-  const handleAddToCart = () => {
-    setCartCount(cartCount + 1); // Increment cart count when a product is added
+  const handleAddToCart = (product) => {
+    addToCart(product);
   };
 
   const renderImageCarouselItem = ({ item }) => (
@@ -143,7 +145,7 @@ const Home = ({ navigation }) => {
       <Image source={{ uri: item.uri }} style={styles.productImage} />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productPrice}>{item.price}</Text>
-      <TouchableOpacity style={styles.addToCartButton} onPress={handleAddToCart}>
+      <TouchableOpacity style={styles.addToCartButton} onPress={() => handleAddToCart(item)}>
         <Text style={styles.addToCartText}>Add to Cart</Text>
       </TouchableOpacity>
     </View>
@@ -236,9 +238,9 @@ const Home = ({ navigation }) => {
             {/* Cart Icon */}
             <TouchableOpacity style={styles.cartIconContainer} onPress={() => navigation.navigate('Cart')}>
               <FontAwesome name="shopping-cart" size={24} color="#888" />
-              {cartCount > 0 && (
+              {cartProducts.length > 0 && (
                 <View style={styles.cartBadge}>
-                  <Text style={styles.cartBadgeText}>{cartCount}</Text>
+                  <Text style={styles.cartBadgeText}>{cartProducts.length}</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -303,7 +305,7 @@ const Home = ({ navigation }) => {
                       </View>
                       <View style={styles.featuredPriceTag}><Text style={styles.featuredPrice}>₹{item.price}</Text></View>
                     </View>
-                    <TouchableOpacity style={styles.featuredAddToCartButton} onPress={handleAddToCart}>
+                    <TouchableOpacity style={styles.featuredAddToCartButton} onPress={() => handleAddToCart(item)}>
                       <Text style={styles.featuredAddToCartText}>Add to Cart</Text>
                     </TouchableOpacity>
                     

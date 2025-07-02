@@ -33,15 +33,55 @@ const TabNavigator = () => (
         }
       },
       headerShown: false,
+      tabBarActiveTintColor: '#007AFF', // Custom active tab color
+      tabBarInactiveTintColor: 'gray', // Custom inactive tab color
+      tabBarLabelStyle: {
+        fontSize: 12,
+        marginBottom: 4, // Adjust spacing
+      },
+      tabBarStyle: {
+        height: 60, // Increase tab bar height
+        paddingBottom: 6, // Adjust padding
+      },
+      tabBarItemStyle: {
+        padding: 4, // Adjust item padding
+      },
     })}
   >
-    <Tab.Screen name="Home" component={Home} />
-    <Tab.Screen name="About" component={About} />
-    <Tab.Screen name="Raw Materials" component={RawMaterialScreen} />
-    <Tab.Screen name="Service" component={ServiceRequest} />
-    <Tab.Screen name="Profile" component={Profile} />
-    <Tab.Screen name="Cart" component={Cart} options={{ tabBarButton: () => null, tabBarVisible: false }} />
+    <Tab.Screen 
+      name="Home" 
+      component={Home} 
+      options={{ tabBarLabel: 'Home' }} 
+    />
+    <Tab.Screen 
+      name="About" 
+      component={About} 
+      options={{ tabBarLabel: 'About' }} 
+    />
+    <Tab.Screen 
+      name="Raw Materials" 
+      component={RawMaterialScreen} 
+      options={{ tabBarLabel: 'Materials' }} // Shortened label
+    />
+    <Tab.Screen 
+      name="Service" 
+      component={ServiceRequest} 
+      options={{ tabBarLabel: 'Service' }} 
+    />
+    <Tab.Screen 
+      name="Profile" 
+      component={Profile} 
+      options={{ tabBarLabel: 'Profile' }} 
+    />
+    <Tab.Screen 
+      name="Cart" 
+      component={Cart} 
+      options={{ 
+        tabBarButton: () => null, 
+        tabBarVisible: false 
+      }} 
+    />
   </Tab.Navigator>
 );
 
-export default TabNavigator; 
+export default TabNavigator;
