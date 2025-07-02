@@ -33,18 +33,18 @@ const TabNavigator = () => (
         }
       },
       headerShown: false,
-      tabBarActiveTintColor: '#007AFF', // Custom active tab color
-      tabBarInactiveTintColor: 'gray', // Custom inactive tab color
+      tabBarActiveTintColor: '#007AFF',
+      tabBarInactiveTintColor: 'gray',
       tabBarLabelStyle: {
         fontSize: 12,
-        marginBottom: 4, // Adjust spacing
+        marginBottom: 0, // Remove extra spacing
       },
       tabBarStyle: {
-        height: 60, // Increase tab bar height
-        paddingBottom: 6, // Adjust padding
+        height: 50, // Default height
+        paddingBottom: 0, // Remove extra padding
       },
       tabBarItemStyle: {
-        padding: 4, // Adjust item padding
+        padding: 0, // Remove extra item padding
       },
     })}
   >
@@ -61,7 +61,7 @@ const TabNavigator = () => (
     <Tab.Screen 
       name="Raw Materials" 
       component={RawMaterialScreen} 
-      options={{ tabBarLabel: 'Materials' }} // Shortened label
+      options={{ tabBarLabel: 'Materials' }}
     />
     <Tab.Screen 
       name="Service" 
@@ -76,10 +76,7 @@ const TabNavigator = () => (
     <Tab.Screen 
       name="Cart" 
       component={Cart} 
-      options={{ 
-        tabBarButton: () => null, 
-        tabBarVisible: false 
-      }} 
+      options={{ tabBarButton: () => null }} // Hide Cart tab from tab bar
     />
   </Tab.Navigator>
 );

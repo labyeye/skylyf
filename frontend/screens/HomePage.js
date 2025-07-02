@@ -17,6 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import axios from 'axios';
 import { endpoints } from '../src/config/api';
 import { useCart } from '../src/CartContext';
+import logo from '../src/assets/images/logo.png';
 
 const { width } = Dimensions.get('window');
 const FEATURED_CARD_WIDTH = width * 0.6; // 60% of screen width
@@ -227,15 +228,7 @@ const Home = ({ navigation }) => {
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Search Bar */}
           <View style={styles.searchContainer}>
-            <FontAwesome name="search" size={20} color="#888" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search products..."
-              value={searchTerm}
-              onChangeText={handleSearch}
-              placeholderTextColor="#888"
-            />
-            {/* Cart Icon */}
+            <Image source={logo} style={styles.logo} />            
             <TouchableOpacity style={styles.cartIconContainer} onPress={() => navigation.navigate('Cart')}>
               <FontAwesome name="shopping-cart" size={24} color="#888" />
               {cartProducts.length > 0 && (
@@ -385,10 +378,6 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
     height: 48,
     position: 'relative',
   },
@@ -808,6 +797,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
     letterSpacing: 0.5,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+    marginRight: 8,
   },
 });
 

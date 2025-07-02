@@ -53,7 +53,7 @@ const Cart = ({navigation}) => {
         <Text style={styles.headerTitle}>My Cart</Text>
       </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {cartProducts.length > 0 ? (
+      {cartProducts.length > 0 ? (
           <>
             {cartProducts.map((product, idx) => (
               <View style={styles.productCard} key={product.id || idx}>
@@ -65,8 +65,8 @@ const Cart = ({navigation}) => {
                   style={styles.productImage}
                 />
                 <View style={styles.productInfo}>
-                  <Text style={styles.productName}>{product.name}</Text>
-                  <Text style={styles.productPrice}>₹{product.price}</Text>
+            <Text style={styles.productName}>{product.name}</Text>
+            <Text style={styles.productPrice}>₹{product.price}</Text>
                   <View style={styles.qtyRow}>
                     <TouchableOpacity
                       style={styles.qtyBtn}
@@ -153,14 +153,14 @@ const Cart = ({navigation}) => {
                 <Text style={styles.summaryTotalLabel}>Total</Text>
                 <Text style={styles.summaryTotalValue}>₹{total.toFixed(2)}</Text>
               </View>
-            </View>
+          </View>
             <TouchableOpacity style={styles.checkoutBtn} onPress={() => navigation.navigate('BillDetails', { orderValue: total })}>
               <Text style={styles.checkoutBtnText}>Go to Bill Details</Text>
             </TouchableOpacity>
           </>
-        ) : (
-          <Text style={styles.emptyText}>No products in cart.</Text>
-        )}
+      ) : (
+        <Text style={styles.emptyText}>No products in cart.</Text>
+      )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -273,4 +273,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Cart;
+export default Cart; 
