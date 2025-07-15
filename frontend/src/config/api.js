@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = 'http://10.0.2.2:3000/api';
 
 export const endpoints = {
   register: `${API_URL}/auth/register`,
