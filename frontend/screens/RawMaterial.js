@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   Text,
   StyleSheet,
@@ -10,16 +10,18 @@ import {
   SafeAreaView,
   TextInput,
   Modal,
+  Platform,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {Picker} from '@react-native-picker/picker';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
-import { endpoints } from '../src/config/api';
-import { useCart } from '../src/CartContext';
+import {endpoints} from '../src/config/api';
+import {useCart} from '../src/CartContext';
+import BackButton from '../src/components/BackButton';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-const RawMaterialScreen = ({ navigation }) => {
+const RawMaterialScreen = ({navigation}) => {
   const [cartCount, setCartCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
@@ -29,17 +31,43 @@ const RawMaterialScreen = ({ navigation }) => {
   const [filterDiscount, setFilterDiscount] = useState(0);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  const { cartProducts, addToCart } = useCart();
+
+  const {cartProducts, addToCart} = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
         const res = await axios.get(endpoints.products);
-        setProducts(res.data);
-        setFilteredProducts(res.data);
+        // Transform the data to ensure it has the expected structure
+        const transformedProducts = res.data.map(product => ({
+          id: product.id || '',
+          name: product.name || '',
+          description: product.description || '',
+          price: product.price || product.regular_price || '0',
+          regular_price: product.regular_price || product.price || '0',
+          discount:
+            product.discount ||
+            (product.regular_price &&
+            product.price &&
+            product.regular_price > product.price
+              ? Math.round(
+                  (1 - Number(product.price) / Number(product.regular_price)) *
+                    100,
+                )
+              : 0),
+          rating: product.rating || product.average_rating || 0,
+          images: Array.isArray(product.images) ? product.images : [],
+          stock_quantity: product.stock_quantity || 0,
+          categories: Array.isArray(product.categories)
+            ? product.categories
+            : [],
+        }));
+        console.log('Transformed products:', transformedProducts.length);
+        setProducts(transformedProducts);
+        setFilteredProducts(transformedProducts);
       } catch (error) {
+        console.error('Error fetching products:', error);
         setProducts([]);
         setFilteredProducts([]);
       } finally {
@@ -51,8 +79,8 @@ const RawMaterialScreen = ({ navigation }) => {
 
   useEffect(() => {
     if (searchTerm) {
-      const searchResults = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      const searchResults = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       setFilteredProducts(searchResults);
     } else {
@@ -61,33 +89,37 @@ const RawMaterialScreen = ({ navigation }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm, products]);
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = product => {
     addToCart(product);
   };
 
-  const handleSortChange = (value) => {
+  const handleSortChange = value => {
     setSortOption(value);
     sortProducts(value);
   };
 
-  const handlePriceRangeChange = (value) => {
+  const handlePriceRangeChange = value => {
     setFilterPriceRange(value);
     applyFilters();
   };
 
-  const handleDiscountChange = (value) => {
+  const handleDiscountChange = value => {
     setFilterDiscount(value);
     applyFilters();
   };
 
   const applyFilters = () => {
-    const filtered = products.filter((product) => {
-      const matchesSearch = searchTerm ? 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+    const filtered = products.filter(product => {
+      const matchesSearch = searchTerm
+        ? product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
+
+      const productPrice = Number(product.price);
+
       return (
         matchesSearch &&
-        Number(product.price) >= filterPriceRange[0] &&
-        Number(product.price) <= filterPriceRange[1] &&
+        productPrice >= filterPriceRange[0] &&
+        productPrice <= filterPriceRange[1] &&
         (product.discount || 0) >= filterDiscount
       );
     });
@@ -100,8 +132,6 @@ const RawMaterialScreen = ({ navigation }) => {
       sortedData.sort((a, b) => Number(a.price) - Number(b.price));
     } else if (option === 'priceHighToLow') {
       sortedData.sort((a, b) => Number(b.price) - Number(a.price));
-    } else if (option === 'rating') {
-      sortedData.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
     setFilteredProducts(sortedData);
   };
@@ -115,43 +145,51 @@ const RawMaterialScreen = ({ navigation }) => {
     setShowFilterModal(false);
   };
 
-  const formatPrice = (price) => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const formatPrice = price => {
+    if (!price && price !== 0) return '0';
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   };
 
-  const renderProductItem = ({ item }) => {
-    const discountedPrice = item.discount > 0 
-      ? item.price - (item.price * item.discount / 100) 
-      : item.price;
-      
+  const renderProductItem = ({item}) => {
+    // Calculate the discounted price
+    const regularPrice = Number(item.regular_price || item.price || 0);
+    const discount = item.discount || 0;
+    const discountedPrice =
+      discount > 0
+        ? regularPrice - (regularPrice * discount) / 100
+        : Number(item.price || 0);
+
     return (
       <View style={styles.productItem}>
-        <Image source={{ uri: item.images?.[0]?.src || 'https://via.placeholder.com/200' }} style={styles.productImage} />
-        
+        <Image
+          source={{
+            uri: item.images?.[0]?.src || 'https://via.placeholder.com/200',
+          }}
+          style={styles.productImage}
+          resizeMode="cover"
+        />
+
         <View style={styles.productDetails}>
-          <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
-          
+          <Text style={styles.productName} numberOfLines={2}>
+            {item.name}
+          </Text>
+
           <View style={styles.priceContainer}>
-            {item.discount > 0 && (
+            {discount > 0 && (
               <>
-                <Text style={styles.discountText}>-{item.discount}%</Text>
-                <Text style={styles.originalPrice}>₹{formatPrice(item.price)}</Text>
+                <Text style={styles.discountText}>-{discount}%</Text>
+                <Text style={styles.originalPrice}>
+                  ₹{formatPrice(regularPrice)}
+                </Text>
               </>
             )}
             <Text style={styles.productPrice}>
               ₹{formatPrice(Math.round(discountedPrice))}
             </Text>
           </View>
-          
-          <View style={styles.ratingContainer}>
-            <FontAwesome name="star" size={16} color="#FFD700" />
-            <Text style={styles.ratingText}>{item.rating ? item.rating.toFixed(1) : 'N/A'}</Text>
-          </View>
-          
-          <TouchableOpacity 
-            style={styles.addToCartButton} 
-            onPress={() => handleAddToCart(item)}
-          >
+          <TouchableOpacity
+            style={styles.addToCartButton}
+            onPress={() => handleAddToCart(item)}>
             <Text style={styles.addToCartText}>+ Add to Cart</Text>
           </TouchableOpacity>
         </View>
@@ -162,10 +200,10 @@ const RawMaterialScreen = ({ navigation }) => {
   // Custom picker item renderer
   const renderPickerItem = (label, value, index) => {
     return (
-      <Picker.Item 
-        key={index} 
-        label={label} 
-        value={value} 
+      <Picker.Item
+        key={index}
+        label={label}
+        value={value}
         style={styles.pickerItem}
       />
     );
@@ -173,22 +211,22 @@ const RawMaterialScreen = ({ navigation }) => {
 
   // Price range options for picker
   const priceRangeOptions = [
-    { label: 'All Prices', value: [0, 5000000] },
-    { label: '₹0 - ₹50,000', value: [0, 50000] },
-    { label: '₹50,000 - ₹1,00,000', value: [50000, 100000] },
-    { label: '₹1,00,000 - ₹10,00,000', value: [100000, 1000000] }
+    {label: 'All Prices', value: [0, 5000000]},
+    {label: '₹0 - ₹50,000', value: [0, 50000]},
+    {label: '₹50,000 - ₹1,00,000', value: [50000, 100000]},
+    {label: '₹1,00,000 - ₹10,00,000', value: [100000, 1000000]},
   ];
 
   // Discount options for picker
   const discountOptions = [
-    { label: 'All Discounts', value: 0 },
-    { label: 'Discount 10%+', value: 10 },
-    { label: 'Discount 20%+', value: 20 }
+    {label: 'All Discounts', value: 0},
+    {label: 'Discount 10%+', value: 10},
+    {label: 'Discount 20%+', value: 20},
   ];
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <Text>Loading products...</Text>
       </View>
     );
@@ -196,27 +234,40 @@ const RawMaterialScreen = ({ navigation }) => {
 
   if (!filteredProducts.length) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <Text>No products found.</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        {paddingTop: Platform.OS === 'android' ? 30 : 0},
+      ]}>
       <View style={styles.header}>
-        <View style={styles.searchContainer}>
-          <FontAwesome name="search" size={20} color="#888" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products..."
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            placeholderTextColor="#888"
-          />
+        <BackButton />
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchContainer}>
+            <FontAwesome
+              name="search"
+              size={20}
+              color="#888"
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search products..."
+              value={searchTerm}
+              onChangeText={setSearchTerm}
+              placeholderTextColor="#888"
+            />
+          </View>
         </View>
-        
-        <TouchableOpacity style={styles.cartIconContainer} onPress={() => navigation.navigate('Cart')}>
+        <TouchableOpacity
+          style={styles.cartIconContainer}
+          onPress={() => navigation.navigate('Cart')}>
           <FontAwesome name="shopping-cart" size={24} color="#333" />
           {cartProducts.length > 0 && (
             <View style={styles.cartBadge}>
@@ -227,62 +278,49 @@ const RawMaterialScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.filterBar}>
-        <TouchableOpacity style={styles.filterButton} onPress={toggleFilterModal}>
+        <TouchableOpacity
+          style={styles.filterButton}
+          onPress={toggleFilterModal}>
           <FontAwesome name="filter" size={16} color="#333" />
           <Text style={styles.filterButtonText}>Filters</Text>
         </TouchableOpacity>
-        
+
         <View style={styles.sortButtonsContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
-              styles.sortButton, 
-              sortOption === 'priceLowToHigh' && styles.activeSortButton
+              styles.sortButton,
+              sortOption === 'priceLowToHigh' && styles.activeSortButton,
             ]}
-            onPress={() => handleSortChange('priceLowToHigh')}
-          >
-            <Text style={[
-              styles.sortButtonText,
-              sortOption === 'priceLowToHigh' && styles.activeSortText
-            ]}>
-              Low to High
+            onPress={() => handleSortChange('priceLowToHigh')}>
+            <Text
+              style={[
+                styles.sortButtonText,
+                sortOption === 'priceLowToHigh' && styles.activeSortText,
+              ]}>
+              Price: Low to High
             </Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
-              styles.sortButton, 
-              sortOption === 'priceHighToLow' && styles.activeSortButton
+              styles.sortButton,
+              sortOption === 'priceHighToLow' && styles.activeSortButton,
             ]}
-            onPress={() => handleSortChange('priceHighToLow')}
-          >
-            <Text style={[
-              styles.sortButtonText,
-              sortOption === 'priceHighToLow' && styles.activeSortText
-            ]}>
-              High to Low
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[
-              styles.sortButton, 
-              sortOption === 'rating' && styles.activeSortButton
-            ]}
-            onPress={() => handleSortChange('rating')}
-          >
-            <Text style={[
-              styles.sortButtonText,
-              sortOption === 'rating' && styles.activeSortText
-            ]}>
-              Top Rated
+            onPress={() => handleSortChange('priceHighToLow')}>
+            <Text
+              style={[
+                styles.sortButtonText,
+                sortOption === 'priceHighToLow' && styles.activeSortText,
+              ]}>
+              Price: High to Low
             </Text>
           </TouchableOpacity>
         </View>
       </View>
-      
+
       <FlatList
         data={filteredProducts}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderProductItem}
         contentContainerStyle={styles.productList}
         showsVerticalScrollIndicator={false}
@@ -294,8 +332,7 @@ const RawMaterialScreen = ({ navigation }) => {
         animationType="slide"
         transparent={true}
         visible={showFilterModal}
-        onRequestClose={toggleFilterModal}
-      >
+        onRequestClose={toggleFilterModal}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
@@ -304,64 +341,80 @@ const RawMaterialScreen = ({ navigation }) => {
                 <FontAwesome name="times" size={24} color="#333" />
               </TouchableOpacity>
             </View>
-            
+
             <View style={styles.filterSection}>
               <Text style={styles.filterLabel}>Price Range</Text>
               <View style={styles.pickerWrapper}>
-                <FontAwesome name="money" size={18} color="#007BFF" style={styles.pickerIcon} />
+                <FontAwesome
+                  name="money"
+                  size={18}
+                  color="#007BFF"
+                  style={styles.pickerIcon}
+                />
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={filterPriceRange}
                     style={styles.picker}
                     onValueChange={handlePriceRangeChange}
                     dropdownIconColor="#007BFF"
-                    mode="dropdown"
-                  >
-                    {priceRangeOptions.map((option, index) => 
-                      renderPickerItem(option.label, option.value, index)
+                    mode="dropdown">
+                    {priceRangeOptions.map((option, index) =>
+                      renderPickerItem(option.label, option.value, index),
                     )}
                   </Picker>
                 </View>
               </View>
             </View>
-            
+
             <View style={styles.filterSection}>
               <Text style={styles.filterLabel}>Discount</Text>
               <View style={styles.pickerWrapper}>
-                <FontAwesome name="tag" size={18} color="#007BFF" style={styles.pickerIcon} />
+                <FontAwesome
+                  name="tag"
+                  size={18}
+                  color="#007BFF"
+                  style={styles.pickerIcon}
+                />
                 <View style={styles.pickerContainer}>
                   <Picker
                     selectedValue={filterDiscount}
                     style={styles.picker}
                     onValueChange={handleDiscountChange}
                     dropdownIconColor="#007BFF"
-                    mode="dropdown"
-                  >
-                    {discountOptions.map((option, index) => 
-                      renderPickerItem(option.label, option.value, index)
+                    mode="dropdown">
+                    {discountOptions.map((option, index) =>
+                      renderPickerItem(option.label, option.value, index),
                     )}
                   </Picker>
                 </View>
               </View>
             </View>
-            
+
             <View style={styles.filterActions}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.resetButton}
                 onPress={() => {
                   setFilterPriceRange([0, 5000000]);
                   setFilterDiscount(0);
-                }}
-              >
-                <FontAwesome name="refresh" size={16} color="#555" style={{ marginRight: 8 }} />
+                }}>
+                <FontAwesome
+                  name="refresh"
+                  size={16}
+                  color="#555"
+                  style={{marginRight: 8}}
+                />
                 <Text style={styles.resetButtonText}>Reset</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={styles.applyButton}
-                onPress={applyFiltersAndCloseModal}
-              >
-                <FontAwesome name="check" size={16} color="#fff" style={{ marginRight: 8 }} />
+                onPress={applyFiltersAndCloseModal}>
+                <FontAwesome
+                  name="check"
+                  size={16}
+                  color="#fff"
+                  style={{marginRight: 8}}
+                />
                 <Text style={styles.applyButtonText}>Apply Filters</Text>
               </TouchableOpacity>
             </View>
@@ -384,16 +437,30 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 8,
   },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 12,
+    flex: 1,
+  },
+  searchBarContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    width:"70%",
+    height: 50,
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+  },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    backgroundColor: 'transparent',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#ddd',
-    height: 44,
   },
   searchIcon: {
     marginRight: 8,
@@ -454,12 +521,13 @@ const styles = StyleSheet.create({
   sortButtonsContainer: {
     flex: 1,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
   },
   sortButton: {
     paddingVertical: 6,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
     borderRadius: 6,
+    marginLeft: 8,
   },
   activeSortButton: {
     backgroundColor: '#e6f2ff',
@@ -481,7 +549,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 12,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,

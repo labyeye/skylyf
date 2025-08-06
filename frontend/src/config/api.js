@@ -6,6 +6,10 @@ export const endpoints = {
   products: `${API_URL}/products`,
   categories: `${API_URL}/categories`,
   orders: `${API_URL}/orders`,
+  userOrders: (email) => `${API_URL}/orders/user/${email}`,
+  initiatePayment: `${API_URL}/payment/initiate`,
+  paymentSuccess: `${API_URL}/payment/success`,
+  paymentFailure: `${API_URL}/payment/failure`,
 };
 
 export default API_URL;

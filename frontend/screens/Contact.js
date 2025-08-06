@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import BackButton from '../src/components/BackButton';
 
 const { width } = Dimensions.get('window');
 
@@ -83,7 +84,11 @@ const ContactPage = () => {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
+        <View style={styles.header}>
+          <BackButton />
+          <Text style={styles.headerTitle}>Contact Us</Text>
+        </View>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardAvoidContainer}

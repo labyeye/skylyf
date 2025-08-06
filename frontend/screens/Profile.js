@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { endpoints } from '../src/config/api';
 import { useCart } from '../src/CartContext';
+import BackButton from '../src/components/BackButton';
 
 const Profile = ({ navigation }) => {
   const [userName, setUserName] = useState('');
@@ -67,9 +68,9 @@ const Profile = ({ navigation }) => {
   const handleEdit = () => navigation.navigate('EditProfile');
 
   const profileOptions = [
-    { icon: 'history', text: 'Order History', action: () => console.log('Order History') },
-    { icon: 'credit-card', text: 'Payment Methods', action: () => console.log('Payment Methods') },
-    { icon: 'map-marker', text: 'My Addresses', action: () => console.log('My Addresses') },
+    { icon: 'history', text: 'Order History', action: () => navigation.navigate('OrderHistory') },
+    { icon: 'credit-card', text: 'Payment Methods', action: () => navigation.navigate('PaymentMethods') },
+    { icon: 'map-marker', text: 'My Addresses', action: () => navigation.navigate('MyAddresses') },
     { icon: 'cog', text: 'Settings', action: () => console.log('Settings') },
     { icon: 'sign-out', text: 'Sign Out', action: handleSignOut, danger: true }
   ];
@@ -83,11 +84,12 @@ const Profile = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f9fa" />
       
-      {/* Header with edit option */}
+      {/* Header with back button and edit option */}
       <View style={styles.header}>
+        <BackButton />
         <Text style={styles.headerTitle}>My Profile</Text>
         <TouchableOpacity onPress={handleEdit}>
           <FontAwesome name="pencil" size={20} color="#0066cc" />
@@ -181,13 +183,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingVertical: 15,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
+    flex: 1,
+    marginLeft: 12,
+    textAlign: 'center',
   },
   scrollView: {
     flex: 1,

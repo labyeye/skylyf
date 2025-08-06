@@ -7,9 +7,12 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import { endpoints } from '../config/api';
+import BackButton from '../components/BackButton';
 
 const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -48,7 +51,8 @@ const RegisterScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
+      <BackButton />
       <Text style={styles.title}>Create Account</Text>
       <Text style={styles.subtitle}>
         Enter your email to register. A temporary password will be provided after registration.
@@ -85,7 +89,7 @@ const RegisterScreen = ({ navigation }) => {
           Already have an account? Login here
         </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 

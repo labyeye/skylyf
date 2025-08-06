@@ -1,0 +1,232 @@
+[
+  {
+    "id": "1",
+    "name": "ZSL-200 Paper Cup Making Machine",
+    "description": "High-speed automatic paper cup forming machine with servo motor control for precise operations. Perfect for medium to large scale production.",
+    "price": "450000",
+    "regular_price": "500000",
+    "discount": 10,
+    "rating": 4.7,
+    "stock_quantity": 5,
+    "images": [
+      {
+        "id": 101,
+        "src": "https://via.placeholder.com/500x500.png?text=Paper+Cup+Machine",
+        "alt": "Paper Cup Machine"
+      }
+    ],
+    "categories": [
+      {
+        "id": 15,
+        "name": "Machines"
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "name": "ZSL-350 High Speed Paper Cup Machine",
+    "description": "Advanced paper cup machine with capacity of producing 70-80 cups per minute. Includes automatic lubrication system and PLC control panel.",
+    "price": "650000",
+    "regular_price": "700000",
+    "discount": 7,
+    "rating": 4.9,
+    "stock_quantity": 3,
+    "images": [
+      {
+        "id": 102,
+        "src": "https://via.placeholder.com/500x500.png?text=High+Speed+Cup+Machine",
+        "alt": "High Speed Cup Machine"
+      }
+    ],
+    "categories": [
+      {
+        "id": 15,
+        "name": "Machines"
+      }
+    ]
+  },
+  {
+    "id": "3",
+    "name": "Die Set for Paper Cup Machine",
+    "description": "Precision-engineered die set compatible with ZSL series cup machines. Made from high-grade hardened steel for long life.",
+    "price": "98000",
+    "regular_price": "120000",
+    "discount": 18,
+    "rating": 4.5,
+    "stock_quantity": 12,
+    "images": [
+      {
+        "id": 103,
+        "src": "https://via.placeholder.com/500x500.png?text=Die+Set",
+        "alt": "Die Set"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "name": "Premium PE Coated Paper Rolls (210 GSM)",
+    "description": "Food-grade PE coated paper rolls for cup manufacturing. Available in various widths and designs.",
+    "price": "45000",
+    "regular_price": "48000",
+    "discount": 6,
+    "rating": 4.3,
+    "stock_quantity": 50,
+    "images": [
+      {
+        "id": 104,
+        "src": "https://via.placeholder.com/500x500.png?text=Paper+Rolls",
+        "alt": "Paper Rolls"
+      }
+    ],
+    "categories": [
+      {
+        "id": 17,
+        "name": "Raw Materials"
+      }
+    ]
+  },
+  {
+    "id": "5",
+    "name": "Maintenance Kit for Paper Cup Machines",
+    "description": "Complete maintenance kit including lubricants, cleaning supplies, and common replacement parts for ZSL series machines.",
+    "price": "18500",
+    "regular_price": "22000",
+    "discount": 16,
+    "rating": 4.8,
+    "stock_quantity": 25,
+    "images": [
+      {
+        "id": 105,
+        "src": "https://via.placeholder.com/500x500.png?text=Maintenance+Kit",
+        "alt": "Maintenance Kit"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  },
+  {
+    "id": "6",
+    "name": "Heating Element for ZSL Series",
+    "description": "Original replacement heating element for bottom sealing unit in ZSL series machines.",
+    "price": "8500",
+    "regular_price": "9000",
+    "discount": 5,
+    "rating": 4.6,
+    "stock_quantity": 40,
+    "images": [
+      {
+        "id": 106,
+        "src": "https://via.placeholder.com/500x500.png?text=Heating+Element",
+        "alt": "Heating Element"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  },
+  {
+    "id": "7",
+    "name": "Paper Cup Bottom Punching Unit",
+    "description": "Replacement bottom punching unit for paper cup machines. Precision machined for perfect cup bottoms.",
+    "price": "35000",
+    "regular_price": "38000",
+    "discount": 8,
+    "rating": 4.4,
+    "stock_quantity": 15,
+    "images": [
+      {
+        "id": 107,
+        "src": "https://via.placeholder.com/500x500.png?text=Bottom+Punching+Unit",
+        "alt": "Bottom Punching Unit"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  },
+  {
+    "id": "8",
+    "name": "Paper Cup Handle Applicator Attachment",
+    "description": "Add-on attachment for ZSL series machines to apply handles to paper cups automatically.",
+    "price": "85000",
+    "regular_price": "95000",
+    "discount": 10,
+    "rating": 4.2,
+    "stock_quantity": 8,
+    "images": [
+      {
+        "id": 108,
+        "src": "https://via.placeholder.com/500x500.png?text=Handle+Applicator",
+        "alt": "Handle Applicator"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  },
+  {
+    "id": "9",
+    "name": "Hot Air Seam Sealing Unit",
+    "description": "Replacement seam sealing unit using hot air technology for improved cup quality and reduced maintenance.",
+    "price": "42000",
+    "regular_price": "48000",
+    "discount": 12,
+    "rating": 4.7,
+    "stock_quantity": 10,
+    "images": [
+      {
+        "id": 109,
+        "src": "https://via.placeholder.com/500x500.png?text=Seam+Sealing+Unit",
+        "alt": "Seam Sealing Unit"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  },
+  {
+    "id": "10",
+    "name": "Servo Motor for ZSL Series",
+    "description": "High-quality replacement servo motor for ZSL series cup machines. Direct replacement for worn motors.",
+    "price": "28000",
+    "regular_price": "32000",
+    "discount": 12,
+    "rating": 4.9,
+    "stock_quantity": 12,
+    "images": [
+      {
+        "id": 110,
+        "src": "https://via.placeholder.com/500x500.png?text=Servo+Motor",
+        "alt": "Servo Motor"
+      }
+    ],
+    "categories": [
+      {
+        "id": 16,
+        "name": "Parts & Accessories"
+      }
+    ]
+  }
+]

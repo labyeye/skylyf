@@ -9,9 +9,11 @@ import {
   ScrollView,
   TextInput,
   Switch,
+  Platform,
 } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {useCart} from '../src/CartContext';
+import BackButton from '../src/components/BackButton';
 
 const GST_RATE = 0.18; // 18% GST
 
@@ -43,15 +45,18 @@ const Cart = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}>
-          <FontAwesome name="arrow-left" size={22} color="#007BFF" />
-        </TouchableOpacity>
+        <BackButton />
         <Text style={styles.headerTitle}>My Cart</Text>
+        <TouchableOpacity 
+          style={styles.historyButton} 
+          onPress={() => navigation.navigate('OrderHistory')}
+        >
+          <FontAwesome name="history" size={20} color="#555" />
+        </TouchableOpacity>
       </View>
+      
       <ScrollView contentContainerStyle={styles.scrollContent}>
       {cartProducts.length > 0 ? (
           <>
@@ -154,8 +159,12 @@ const Cart = ({navigation}) => {
                 <Text style={styles.summaryTotalValue}>₹{total.toFixed(2)}</Text>
               </View>
           </View>
-            <TouchableOpacity style={styles.checkoutBtn} onPress={() => navigation.navigate('BillDetails', { orderValue: total })}>
-              <Text style={styles.checkoutBtnText}>Go to Bill Details</Text>
+            <TouchableOpacity 
+              style={styles.checkoutBtn} 
+              onPress={() => navigation.navigate('Checkout', { orderValue: total })}
+            >
+              <FontAwesome name="shopping-cart" size={18} color="#fff" style={{ marginRight: 8 }} />
+              <Text style={styles.checkoutBtnText}>Checkout</Text>
             </TouchableOpacity>
           </>
       ) : (
@@ -172,12 +181,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    paddingTop: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
+    height: 60,
   },
-  backButton: {marginRight: 12},
-  headerTitle: {fontSize: 20, fontWeight: 'bold', color: '#222'},
+  headerTitle: {
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: '#222',
+    marginLeft: 15,
+    flex: 1,
+  },
+  historyButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   scrollContent: {paddingBottom: 32},
   productCard: {
     flexDirection: 'row',
@@ -257,8 +279,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#007BFF',
     borderRadius: 10,
     margin: 16,
+    marginBottom: 8,
     paddingVertical: 16,
     alignItems: 'center',
+  },
+  payuCheckoutBtn: {
+    backgroundColor: '#5C2D91', // PayU purple color
+    borderRadius: 10,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   checkoutBtnText: {color: '#fff', fontSize: 17, fontWeight: 'bold'},
   emptyText: {marginTop: 40, textAlign: 'center', color: '#888', fontSize: 16},

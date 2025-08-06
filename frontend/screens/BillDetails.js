@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Switch, Modal } from 'react-native';
+import { View, Text, TextInput, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, Switch, Modal, Platform } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import countriesData from '../src/assets/countries.json'; // You will need to add this JSON file
+import BackButton from '../src/components/BackButton';
 
 const BillDetails = ({ navigation, route }) => {
   const [firstName, setFirstName] = useState('');
@@ -36,9 +37,18 @@ const BillDetails = ({ navigation, route }) => {
   const orderValue = route?.params?.orderValue || 0;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
+      <View style={styles.header}>
+        <BackButton />
+        <Text style={styles.headerTitle}>Billing Details</Text>
+        <TouchableOpacity 
+          style={styles.addressesButton} 
+          onPress={() => navigation.navigate('MyAddresses')}
+        >
+          <Text style={styles.addressesButtonText}>My Addresses</Text>
+        </TouchableOpacity>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.header}>Billing Details</Text>
         <View style={styles.inputRow}>
           <TextInput style={styles.input} placeholder="First Name" value={firstName} onChangeText={setFirstName} />
           <TextInput style={styles.input} placeholder="Last Name" value={lastName} onChangeText={setLastName} />
@@ -138,7 +148,35 @@ const BillDetails = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f8f8' },
   scrollContent: { padding: 20, paddingBottom: 40 },
-  header: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, color: '#222', textAlign: 'center' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 10,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    height: 60,
+  },
+  headerTitle: { 
+    fontSize: 20, 
+    fontWeight: 'bold', 
+    color: '#222',
+    marginLeft: 15,
+    flex: 1,
+  },
+  addressesButton: {
+    borderWidth: 1,
+    borderColor: '#007BFF',
+    borderRadius: 6,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  addressesButtonText: {
+    color: '#007BFF',
+    fontSize: 12,
+    fontWeight: '500',
+  },
   input: {
     backgroundColor: '#fff',
     borderRadius: 8,

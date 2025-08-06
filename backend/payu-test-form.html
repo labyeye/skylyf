@@ -1,0 +1,72 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PayU Test Payment Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #5C2D91; color: white; padding: 15px 30px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #4A2574; }
+        .info { background: #f0f8ff; padding: 15px; border-radius: 4px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>PayU Test Payment Form</h1>
+    <div class="info">
+        <strong>Test Mode:</strong> This form will redirect to PayU test environment<br>
+        <strong>Merchant Key:</strong> cOOwyH<br>
+        <strong>Amount:</strong> ₹10.00
+    </div>
+    
+    <form action="https://test.payu.in/_payment" method="post">
+        <input type="hidden" name="key" value="cOOwyH">
+        <input type="hidden" name="txnid" value="TEST_1754512452750_431">
+        <input type="hidden" name="amount" value="10.00">
+        <input type="hidden" name="productinfo" value="Test Product - Basic">
+        <input type="hidden" name="firstname" value="Test">
+        <input type="hidden" name="email" value="test@example.com">
+        <input type="hidden" name="phone" value="9876543210">
+        <input type="hidden" name="surl" value="http://localhost:3000/api/payment/success">
+        <input type="hidden" name="furl" value="http://localhost:3000/api/payment/failure">
+        <input type="hidden" name="hash" value="e1ee821e044c7df266d60431e269cb5745807472059f641f68790bebadab72f52b2ab5dce1e3d2a8d856fc952a1867c320c379b765dc34276c419024e4139900">
+        <input type="hidden" name="service_provider" value="payu_paisa">
+        
+        <div class="form-group">
+            <label>Transaction ID:</label>
+            <input type="text" value="TEST_1754512452750_431" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>Amount:</label>
+            <input type="text" value="₹10.00" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>Product Info:</label>
+            <input type="text" value="Test Product - Basic" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>Customer Name:</label>
+            <input type="text" value="Test" readonly>
+        </div>
+        
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="text" value="test@example.com" readonly>
+        </div>
+        
+        <button type="submit">Proceed to PayU Payment</button>
+    </form>
+    
+    <div class="info">
+        <strong>Test Cards for PayU:</strong><br>
+        • Visa: 4111111111111111 (CVV: 123, Any future date)<br>
+        • MasterCard: 5555555555554444 (CVV: 123, Any future date)<br>
+        • Net Banking: Use any test bank credentials
+    </div>
+</body>
+</html>

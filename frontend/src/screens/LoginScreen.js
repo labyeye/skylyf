@@ -7,10 +7,13 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { endpoints } from '../config/api';
+import BackButton from '../components/BackButton';
 
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -48,7 +51,8 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
+      <BackButton />
       <Text style={styles.title}>Welcome Back</Text>
       <View style={styles.inputContainer}>
         <TextInput
@@ -88,7 +92,7 @@ const LoginScreen = ({ navigation }) => {
           Don't have an account? Register here
         </Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 

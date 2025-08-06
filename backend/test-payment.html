@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PayU Payment Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { background: #007BFF; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        .info { background: #e7f3ff; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .error { background: #ffe7e7; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h1>PayU Payment Integration Test</h1>
+    
+    <div class="info">
+        <strong>Instructions:</strong>
+        <ol>
+            <li>Make sure your backend server is running on port 3000</li>
+            <li>For testing with real PayU, use a public URL (ngrok recommended)</li>
+            <li>Fill in the form below and click "Test Payment"</li>
+            <li>Use PayU test credentials for testing</li>
+        </ol>
+    </div>
+
+    <form id="paymentForm">
+        <div class="form-group">
+            <label>Amount (₹):</label>
+            <input type="number" id="amount" value="10.00" step="0.01" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Product Info:</label>
+            <input type="text" id="productinfo" value="Test Product" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Customer Name:</label>
+            <input type="text" id="firstname" value="Test User" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="email" value="test@example.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Phone:</label>
+            <input type="tel" id="phone" value="9999999999" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Server URL:</label>
+            <input type="url" id="serverUrl" value="http://localhost:3000" required>
+            <small>Change to your ngrok URL for real testing</small>
+        </div>
+        
+        <button type="submit">Test Payment</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                txnid: 'TEST_' + Date.now(),
+                amount: document.getElementById('amount').value,
+                productinfo: document.getElementById('productinfo').value,
+                firstname: document.getElementById('firstname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                lastname: 'User',
+                address1: 'Test Address',
+                city: 'Test City',
+                state: 'Test State',
+                country: 'India',
+                zipcode: '123456'
+            };
+            
+            const serverUrl = document.getElementById('serverUrl').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>Initiating payment...</p>';
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/payment/initiate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const paymentData = await response.json();
+                console.log('Payment data:', paymentData);
+                
+                if (paymentData.free_order) {
+                    resultDiv.innerHTML = `
+                        <div class="info">
+                            <h3>Free Order Created Successfully!</h3>
+                            <p><strong>Order ID:</strong> ${paymentData.order_id}</p>
+                            <p><strong>Transaction ID:</strong> ${paymentData.txnid}</p>
+                        </div>
+                    `;
+                } else {
+                    // Create and submit PayU form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = paymentData.payment_url;
+                    
+                    const fields = [
+                        'key', 'txnid', 'amount', 'productinfo', 'firstname', 'email', 'phone',
+                        'lastname', 'address1', 'city', 'state', 'country', 'zipcode',
+                        'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'surl', 'furl', 'hash', 'service_provider'
+                    ];
+                    
+                    fields.forEach(field => {
+                        if (paymentData[field] !== undefined) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = field;
+                            input.value = paymentData[field];
+                            form.appendChild(input);
+                        }
+                    });
+                    
+                    document.body.appendChild(form);
+                    
+                    resultDiv.innerHTML = `
+                        <div class="info">
+                            <h3>Payment Data Generated Successfully!</h3>
+                            <p><strong>Transaction ID:</strong> ${paymentData.txnid}</p>
+                            <p><strong>Amount:</strong> ₹${paymentData.amount}</p>
+                            <p><strong>Hash:</strong> ${paymentData.hash.substring(0, 20)}...</p>
+                            <p>Redirecting to PayU in 3 seconds...</p>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        form.submit();
+                    }, 3000);
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Payment Initiation Failed</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Please check:</p>
+                        <ul>
+                            <li>Backend server is running</li>
+                            <li>Server URL is correct</li>
+                            <li>Network connectivity</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

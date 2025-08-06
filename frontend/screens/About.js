@@ -1,23 +1,16 @@
 import React from 'react';
-import { Text, StyleSheet, View, Image, ScrollView, SafeAreaView, TouchableOpacity, StatusBar } from 'react-native';
+import { Text, StyleSheet, View, Image, ScrollView, SafeAreaView, TouchableOpacity, StatusBar, Platform } from 'react-native';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import BackButton from '../src/components/BackButton';
 
 const AboutPage = ({ navigation }) => {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: Platform.OS === 'android' ? 30 : 0 }]}>
       <StatusBar backgroundColor="#1a73e8" barStyle="light-content" />
       
       {/* Header with Back Button */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-          accessible={true}
-          accessibilityLabel="Go back"
-          accessibilityRole="button"
-        >
-          <FontAwesome name="arrow-left" size={20} color="#fff" />
-        </TouchableOpacity>
+        <BackButton style={styles.customBackButton} color="#fff" />
         <Text style={styles.headerTitle}>About SkyLyf</Text>
       </View>
       
@@ -187,6 +180,11 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 8,
+  },
+  customBackButton: {
+    backgroundColor: 'transparent',
+    shadowColor: 'transparent',
+    borderWidth: 0,
   },
   headerTitle: {
     color: '#fff',
